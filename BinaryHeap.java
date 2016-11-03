@@ -1,3 +1,5 @@
+package datastructure;
+
 import java.util.*;
 import java.io.*;
 import java.text.*;
@@ -80,6 +82,7 @@ public class BinaryHeap {
 				case 5:
 					break;
 				case 6:
+					scan.close();
 					System.exit(0);
 					break;
 			}
@@ -105,7 +108,14 @@ class BinaryHeapMain {
 	}
 
 	public void insert (Event event) {
-
+		if (pos == 0) {
+			heapList.add(pos, new Arrival());
+			heapList.add(pos+1, event);
+			pos = 2;
+		} else {
+			heapList.add(pos++, event);
+			bubbleUp(pos - 1);
+		}
 	}
 
 	public void add (Event event) {
@@ -119,7 +129,7 @@ class BinaryHeapMain {
 
 	public void buildHeap () {
 		tempList = new ArrayList<Event>(heapList);
-		heapList.clear();
+		heapList = new ArrayList<>();
 
 		for (Iterator<Event> it = tempList.iterator(); it.hasNext();) {
 			Event event = it.next();
@@ -129,7 +139,7 @@ class BinaryHeapMain {
 				pos = 2;
 			} else {
 				heapList.add(pos++, event);
-				bubbleUp ();
+				bubbleUp (pos - 1);
 			}
 		}
 		heapBuilt = true;
@@ -137,20 +147,67 @@ class BinaryHeapMain {
 
 	public void bubbleUp () {
 		int p = pos - 1;
-		while (p > 0 && heapList.get(p/2).getTimeOfEvent() > heapList.get(p).getTimeOfEvent()) {
-			Event temp = heapList.get(p);
-			heapList.set(p, heapList.get(p/2));
-			heapList.set(p/2, temp);
-			p = p / 2;
+		try {
+			while (p > 0 && heapList.get(p/2).getTimeOfEvent() > heapList.get(p).getTimeOfEvent()) {
+				Event temp = heapList.get(p);
+				heapList.set(p, heapList.get(p/2));
+				heapList.set(p/2, temp);
+				p = p / 2;
+			}
+		} catch (NullPointerException | IndexOutOfBoundsException ne) {
+			
 		}
 	}
+	
+	
+	public void bubbleUp (int position) {
+		try {
+			int leftChildInd = getLeftChildPosition(position);
+			int rightChildInd = getRightChildPosition(position);
+			if (leftChildInd < pos && rightChildInd < pos && heapList.get(position).getTimeOfEvent() > heapList.get(leftChildInd).getTimeOfEvent() || 
+				heapList.get(position).getTimeOfEvent() > heapList.get(rightChildInd).getTimeOfEvent()) {
+				if (heapList.get(getLeftChildPosition(position)).getTimeOfEvent() < heapList.get(getRightChildPosition(position)).getTimeOfEvent()) {
+					swap (position, getLeftChildPosition(position));
+					bubbleUp(getLeftChildPosition(position));
+				} else {
+					swap(position, getRightChildPosition(position));
+					bubbleUp(getRightChildPosition(position));
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//test comment
+	
+	public int getLeftChildPosition (int position) {
+		return position * 2;
+	}
+	
+	public int getRightChildPosition (int position) {
+		return position * 2 + 1;
+	}
+	
+	public void swap (int position1, int position2) {
+		Event temp = heapList.get(position1);
+		heapList.set(position1, heapList.get(position2));
+		heapList.set(position2, temp);
+	}
+	
 
 	public void printList () {
-		DecimalFormat df = new DecimalFormat ("00.00");
-		for (Iterator<Event> it = heapList.iterator(); it.hasNext();) {
-			System.out.print (df.format(it.next().getTimeOfEvent()) + " ");
+		try {
+			DecimalFormat df = new DecimalFormat ("00.00");
+			for (int i = 1; i < pos; i++) {
+				Event event = heapList.get(i);
+				System.out.print (event.toString() + ":" + df.format(event.getTimeOfEvent()) + "; ");
+			}
+			System.out.println ();
+		} catch (NullPointerException ne) {
+			
 		}
-		System.out.println ();
 	}
 }
 
@@ -189,6 +246,10 @@ class Arrival extends Event {
 		DecimalFormat df = new DecimalFormat ("00.00");
 		System.out.println ("Arrival Event at time " + df.format(super.getTimeOfEvent()));
 	}
+	
+	public String toString () {
+		return "Arrival";
+	}
 }
 
 class Termination extends Event {
@@ -203,6 +264,10 @@ class Termination extends Event {
 	public void print () {
 		DecimalFormat df = new DecimalFormat ("00.00");
 		System.out.println ("Termination Event at time " + df.format(super.getTimeOfEvent()));	
+	}
+	
+	public String toString () {
+		return "Termination";
 	}
 }
 
@@ -219,5 +284,9 @@ class EndOfService extends Event {
 	public void print () {
 		DecimalFormat df = new DecimalFormat ("00.00");
 		System.out.println ("EndOfService Event at time " + df.format(super.getTimeOfEvent()));
+	}
+	
+	public String toString () {
+		return "EndOfService";
 	}
 }
